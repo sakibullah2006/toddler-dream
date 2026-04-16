@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       // If theme assets cannot be loaded, proceed with text-only prompt
     }
 
-    const prompt = `${theme.compositePrompt} Preserve identity lock: keep exactly the same face, hairstyle/hairline, expression, skin tone, body posture, camera angle, and framing as the source image. Keep newborn anatomy and proportions unchanged. Output must be photorealistic, like a real professional camera photo, with natural skin texture and subtle fine detail. Do not generate animation, cartoon, illustration, painting, CGI, 3D render look, plastic skin, face swap, age change, extra limbs, or distorted anatomy.`;
+    const prompt = `${theme.compositePrompt} Framing requirement: full-body composition only. Show the complete baby from head to toes in frame, including both hands and both feet when visible naturally. Use a zoomed-out camera distance so no body parts are cropped by the image edges. Preserve identity lock: keep exactly the same face, hairstyle/hairline, expression, skin tone, and body posture as the source image. Keep newborn anatomy and proportions unchanged. Output must be photorealistic, like a real professional camera photo, with natural skin texture and subtle fine detail. Do not generate animation, cartoon, illustration, painting, CGI, 3D render look, plastic skin, face swap, age change, extra limbs, or distorted anatomy.`;
 
     let base64 = "";
 

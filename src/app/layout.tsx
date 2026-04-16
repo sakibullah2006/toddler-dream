@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Toddler Dream | Baby Portrait Generator",
+  title: "BabySnap | Baby Portrait Generator",
   description: "Upload a baby photo, pick an artistic theme, and generate a dreamy portrait.",
 };
 

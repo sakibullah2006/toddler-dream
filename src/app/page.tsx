@@ -78,7 +78,7 @@ export default function Home() {
       <header className="sticky top-0 z-20 border-b border-[#ea9ab2]/40 bg-white/80 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#e27396]">Toddler Dream</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#e27396]">BabySnap</p>
             <p className="text-sm font-semibold text-[#4b2d3a]">Baby Portrait Studio</p>
           </div>
           <nav className="flex items-center gap-2 text-sm font-medium">
@@ -198,7 +198,7 @@ export default function Home() {
         </section>
 
         <footer className="mt-12 border-t border-[#ea9ab2]/35 pt-5 text-xs text-[#7c6270]">
-          <p>Toddler Dream • Designed for realistic themed newborn portraits.</p>
+          <p>BabySnap • Designed for realistic themed newborn portraits.</p>
         </footer>
       </main>
     </div>
