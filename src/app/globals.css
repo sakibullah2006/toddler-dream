@@ -1,13 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f7f7;
-  --foreground: #2f2f36;
-  --brand-1: #e27396;
-  --brand-2: #ea9ab2;
-  --brand-3: #efcfe3;
-  --brand-4: #eaf2d7;
-  --brand-5: #b3dee2;
+  --background: #fef7f2;
+  --foreground: #1c1008;
+  --orange-50: #fff4ed;
+  --orange-100: #fde8d4;
+  --orange-200: #fcb896;
+  --orange-400: #f87c3c;
+  --orange-600: #e05a10;
+  --orange-700: #c44800;
 }
 
 @theme inline {
@@ -17,16 +18,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html,
 body {
-  background:
-    radial-gradient(circle at 24px 24px, color-mix(in srgb, var(--brand-2) 18%, transparent) 2px, transparent 2.5px),
-    radial-gradient(circle at 0 0, color-mix(in srgb, var(--brand-5) 18%, transparent) 1.8px, transparent 2.3px),
-    repeating-linear-gradient(0deg, transparent 0, transparent 26px, color-mix(in srgb, var(--brand-3) 16%, transparent) 27px),
-    repeating-linear-gradient(90deg, transparent 0, transparent 26px, color-mix(in srgb, var(--brand-3) 16%, transparent) 27px),
-    radial-gradient(circle at 5% 10%, color-mix(in srgb, var(--brand-3) 70%, white) 0%, transparent 35%),
-    radial-gradient(circle at 95% 15%, color-mix(in srgb, var(--brand-5) 70%, white) 0%, transparent 33%),
-    var(--background);
-  background-size: 48px 48px, 48px 48px, 27px 27px, 27px 27px, auto, auto, auto;
-  color: var(--foreground);
+  background-color: #fef7f2;
+  color-scheme: light;
+}
+
+body {
+  color: #1c1008;
   font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
 }

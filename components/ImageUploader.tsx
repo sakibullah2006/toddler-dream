@@ -16,9 +16,7 @@ export function ImageUploader({ file, previewUrl, onFileSelected }: ImageUploade
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const selected = acceptedFiles[0];
-      if (selected) {
-        onFileSelected(selected);
-      }
+      if (selected) onFileSelected(selected);
     },
     [onFileSelected],
   );
@@ -36,23 +34,10 @@ export function ImageUploader({ file, previewUrl, onFileSelected }: ImageUploade
   });
 
   const rejectionMessage = useMemo(() => {
-    if (!fileRejections.length) {
-      return null;
-    }
-
     const firstError = fileRejections[0]?.errors[0];
-    if (!firstError) {
-      return "Could not accept this file. Please try another image.";
-    }
-
-    if (firstError.code === "file-too-large") {
-      return "Image is too large. Please upload a file under 4MB.";
-    }
-
-    if (firstError.code === "file-invalid-type") {
-      return "Unsupported format. Please upload JPEG, PNG, or WebP.";
-    }
-
+    if (!firstError) return null;
+    if (firstError.code === "file-too-large") return "File too large — max 4MB.";
+    if (firstError.code === "file-invalid-type") return "Unsupported format — use JPEG, PNG, or WebP.";
     return firstError.message;
   }, [fileRejections]);
 
@@ -60,48 +45,51 @@ export function ImageUploader({ file, previewUrl, onFileSelected }: ImageUploade
     <div className="w-full">
       <div
         {...getRootProps()}
-        className={`rounded-[1.6rem] border-2 border-dashed p-8 text-center transition-all md:p-10 ${
+        className={`cursor-pointer rounded-xl border-2 border-dashed text-center transition-all ${
           isDragActive
-            ? "border-[#e27396] bg-[#efcfe3]/55"
-            : "border-[#ea9ab2] bg-white/90 hover:border-[#e27396] hover:bg-[#efcfe3]/35"
+            ? "border-[#f87c3c] bg-[#fff4ed]"
+            : "border-[#fde0cc] bg-[#fef7f2] hover:border-[#fcb896] hover:bg-[#fff4ed]"
         }`}
       >
         <input {...getInputProps()} />
         {previewUrl ? (
-          <div className="space-y-3">
-            <div className="relative mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-[#ea9ab2] bg-[#fdf5f8]" style={{ aspectRatio: "1/1" }}>
+          <div className="space-y-2 p-2">
+            <div
+              className="relative mx-auto w-full overflow-hidden rounded-lg"
+              style={{ aspectRatio: "4/3" }}
+            >
               <Image
                 src={previewUrl}
-                alt="Uploaded baby preview"
+                alt="Uploaded photo"
                 fill
                 unoptimized
-                sizes="(max-width: 640px) 90vw, 384px"
+                sizes="(max-width: 640px) 90vw, 480px"
                 className="object-contain"
               />
             </div>
-            <p className="text-sm font-medium text-[#7f4b60]">Tap to replace</p>
+            <p className="text-xs text-[#b07a5a]">Click or drop to replace</p>
           </div>
         ) : (
-          <>
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#efcfe3]/60 text-3xl">
+          <div className="p-6">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#fde8d4] text-2xl">
               📷
             </div>
-            <p className="text-lg font-semibold text-[#82384f]">Drop baby photo here</p>
-            <p className="mt-2 text-sm text-[#9f5d78]">or click to browse</p>
-            <p className="mt-4 text-xs text-[#b06f87]">JPEG, PNG, WebP · max 4MB</p>
-          </>
+            <p className="text-sm font-medium text-[#3d1f0a]">Drop a photo here</p>
+            <p className="mt-1 text-xs text-[#b07a5a]">or click to browse</p>
+            <p className="mt-3 text-xs text-[#c4a090]">JPEG · PNG · WebP · max 4 MB</p>
+          </div>
         )}
       </div>
 
-      {file && !previewUrl ? (
-        <div className="mt-4 rounded-2xl bg-[#eaf2d7] px-4 py-3 text-sm text-[#5f6b4a]">
-          Selected: <span className="font-medium">{file.name}</span>
-        </div>
-      ) : null}
+      {file && !previewUrl && (
+        <p className="mt-2 text-xs text-[#b07a5a]">
+          Selected: <span className="font-medium text-[#8a4a20]">{file.name}</span>
+        </p>
+      )}
 
-      {rejectionMessage ? (
-        <p className="mt-3 text-sm font-medium text-red-600">{rejectionMessage}</p>
-      ) : null}
+      {rejectionMessage && (
+        <p className="mt-2 text-xs font-medium text-red-600">{rejectionMessage}</p>
+      )}
     </div>
   );
 }

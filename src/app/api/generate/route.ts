@@ -14,6 +14,47 @@ function buildDataUrl(base64: string, mimeType = "image/png") {
   return `data:${mimeType};base64,${base64}`;
 }
 
+interface BabyDescription {
+  pose: string;
+  face: string;
+}
+
+async function describeBaby(imageBase64: string, mimeType: string): Promise<BabyDescription> {
+  const response = await client.chat.completions.create({
+    model: "gpt-4o",
+    max_tokens: 400,
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image_url",
+            image_url: { url: `data:${mimeType};base64,${imageBase64}`, detail: "high" },
+          },
+          {
+            type: "text",
+            text: `Analyze this baby photo and return a JSON object with exactly two keys:
+"pose": Describe the baby's exact body pose and position in precise anatomical terms — body orientation (prone/supine/sitting/etc.), head direction and tilt, limb positions (arms, legs, hands, feet), body curvature. 2-3 sentences.
+"face": Describe the baby's facial features in precise detail — exact skin tone (e.g. "warm peach with pink undertones"), face shape, eye shape and spacing (even if closed), nose shape and size, lip shape, cheek fullness, chin shape, any distinctive marks. 2-3 sentences.
+Return only valid JSON, no markdown.`,
+          },
+        ],
+      },
+    ],
+  });
+
+  try {
+    const content = response.choices[0]?.message?.content?.trim() ?? "{}";
+    const parsed = JSON.parse(content) as { pose?: string; face?: string };
+    return {
+      pose: parsed.pose ?? "",
+      face: parsed.face ?? "",
+    };
+  } catch {
+    return { pose: "", face: "" };
+  }
+}
+
 export async function POST(request: Request) {
   try {
     if (!process.env.OPENAI_API_KEY) {
@@ -45,6 +86,19 @@ export async function POST(request: Request) {
       return Response.json({ error: "Image must be 4MB or smaller." }, { status: 400 });
     }
 
+    // Step 1: extract exact pose + face description from source image
+    const imageBuffer = await image.arrayBuffer();
+    const imageBase64 = Buffer.from(imageBuffer).toString("base64");
+    const { pose, face } = await describeBaby(imageBase64, image.type);
+
+    const poseLock = pose
+      ? `EXACT POSE REQUIREMENT — the generated baby must match this pose precisely: ${pose} Do not alter this pose in any way.`
+      : "STRICT POSE LOCK: preserve the baby's exact body position, orientation, and limb placement from the source image unchanged.";
+
+    const faceLock = face
+      ? `EXACT FACE REQUIREMENT — the generated baby must have these exact facial features: ${face} Do not change the face in any way.`
+      : "STRICT FACE LOCK: preserve the baby's exact facial features, skin tone, and identity from the source image.";
+
     let backgroundFile: File | null = null;
     let clothingFile: File | null = null;
 
@@ -57,17 +111,17 @@ export async function POST(request: Request) {
         const bgBuffer = await fs.readFile(bgPath);
         backgroundFile = new File([bgBuffer], "background.png", { type: "image/png" });
       } catch {
-        // Background image optional; model can generate from prompt
+        // Background image optional
       }
 
       try {
         const clothingBuffer = await fs.readFile(clothingPath);
         clothingFile = new File([clothingBuffer], "clothing.png", { type: "image/png" });
       } catch {
-        // Clothing image optional; model can generate from prompt
+        // Clothing image optional
       }
     } catch {
-      // If theme assets cannot be loaded, proceed with text-only prompt
+      // Proceed with text-only prompt if assets unavailable
     }
 
     const assetImages: File[] = [];
@@ -76,9 +130,10 @@ export async function POST(request: Request) {
 
     const hasAssets = assetImages.length > 0;
 
+    // Step 2: inject pose + face descriptions into edit prompt
     const prompt = hasAssets
-      ? `${theme.compositePrompt} Strict identity lock: same face, hairstyle, skin tone, expression, and newborn anatomy from source image — no age change, no face swap. Full-body framing, head to toes, nothing cropped. Photorealistic professional newborn photography; no cartoon, CGI, illustration, or plastic skin.`
-      : `Edit this baby photo to match the following theme: ${theme.description}. ${theme.prompt} Identity lock: preserve the exact face, hairstyle, skin tone, expression, and newborn body proportions from the source image. Full-body framing head to toes, nothing cropped. Photorealistic professional newborn photography; no cartoon, CGI, illustration, or distorted anatomy.`;
+      ? `${poseLock} ${faceLock} ${theme.compositePrompt} Full-body framing head to toes, nothing cropped. Photorealistic professional newborn photography; no cartoon, CGI, illustration, or plastic skin.`
+      : `${poseLock} ${faceLock} Edit this baby photo to match the following theme: ${theme.description}. ${theme.prompt} Only change the background, environment, and costume — never the pose or face. Full-body framing head to toes, nothing cropped. Photorealistic professional newborn photography; no cartoon, CGI, illustration, or distorted anatomy.`;
 
     const editImages: File | [File, ...File[]] = hasAssets
       ? [image, ...assetImages]
@@ -99,7 +154,7 @@ export async function POST(request: Request) {
       const fallback = await client.images.edit({
         model: "dall-e-2",
         image,
-        prompt: `${theme.description}. ${theme.prompt} Preserve baby's face, hair, and posture exactly. Full-body, no crop. Photorealistic.`,
+        prompt: `${poseLock} ${faceLock} ${theme.description}. ${theme.prompt} Full-body, no crop. Photorealistic.`,
         size: "1024x1024",
         response_format: "b64_json",
       });
