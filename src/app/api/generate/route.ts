@@ -70,14 +70,26 @@ export async function POST(request: Request) {
       // If theme assets cannot be loaded, proceed with text-only prompt
     }
 
-    const prompt = `${theme.compositePrompt} Framing requirement: full-body composition only. Show the complete baby from head to toes in frame, including both hands and both feet when visible naturally. Use a zoomed-out camera distance so no body parts are cropped by the image edges. Preserve identity lock: keep exactly the same face, hairstyle/hairline, expression, skin tone, and body posture as the source image. Keep newborn anatomy and proportions unchanged. Output must be photorealistic, like a real professional camera photo, with natural skin texture and subtle fine detail. Do not generate animation, cartoon, illustration, painting, CGI, 3D render look, plastic skin, face swap, age change, extra limbs, or distorted anatomy.`;
+    const assetImages: File[] = [];
+    if (backgroundFile) assetImages.push(backgroundFile);
+    if (clothingFile) assetImages.push(clothingFile);
+
+    const hasAssets = assetImages.length > 0;
+
+    const prompt = hasAssets
+      ? `${theme.compositePrompt} Strict identity lock: same face, hairstyle, skin tone, expression, and newborn anatomy from source image — no age change, no face swap. Full-body framing, head to toes, nothing cropped. Photorealistic professional newborn photography; no cartoon, CGI, illustration, or plastic skin.`
+      : `Edit this baby photo to match the following theme: ${theme.description}. ${theme.prompt} Identity lock: preserve the exact face, hairstyle, skin tone, expression, and newborn body proportions from the source image. Full-body framing head to toes, nothing cropped. Photorealistic professional newborn photography; no cartoon, CGI, illustration, or distorted anatomy.`;
+
+    const editImages: File | [File, ...File[]] = hasAssets
+      ? [image, ...assetImages]
+      : image;
 
     let base64 = "";
 
     try {
       const response = await client.images.edit({
         model: "gpt-image-1",
-        image,
+        image: editImages,
         prompt,
         size: "1024x1024",
       });
@@ -87,7 +99,7 @@ export async function POST(request: Request) {
       const fallback = await client.images.edit({
         model: "dall-e-2",
         image,
-        prompt,
+        prompt: `${theme.description}. ${theme.prompt} Preserve baby's face, hair, and posture exactly. Full-body, no crop. Photorealistic.`,
         size: "1024x1024",
         response_format: "b64_json",
       });

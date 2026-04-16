@@ -68,22 +68,24 @@ export function ImageUploader({ file, previewUrl, onFileSelected }: ImageUploade
       >
         <input {...getInputProps()} />
         {previewUrl ? (
-          <div className="space-y-4">
-            <div className="overflow-hidden rounded-xl border border-[#ea9ab2] bg-white p-1">
+          <div className="space-y-3">
+            <div className="relative mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-[#ea9ab2] bg-[#fdf5f8]" style={{ aspectRatio: "1/1" }}>
               <Image
                 src={previewUrl}
                 alt="Uploaded baby preview"
-                width={1200}
-                height={900}
+                fill
                 unoptimized
-                className="h-64 w-full rounded-lg object-cover sm:h-72"
+                sizes="(max-width: 640px) 90vw, 384px"
+                className="object-contain"
               />
             </div>
-            <p className="text-sm font-medium text-[#7f4b60]">Tap to replace this image</p>
-            <p className="text-xs text-[#9f5d78]">JPEG, PNG, WebP · max 4MB</p>
+            <p className="text-sm font-medium text-[#7f4b60]">Tap to replace</p>
           </div>
         ) : (
           <>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#efcfe3]/60 text-3xl">
+              📷
+            </div>
             <p className="text-lg font-semibold text-[#82384f]">Drop baby photo here</p>
             <p className="mt-2 text-sm text-[#9f5d78]">or click to browse</p>
             <p className="mt-4 text-xs text-[#b06f87]">JPEG, PNG, WebP · max 4MB</p>
@@ -91,7 +93,7 @@ export function ImageUploader({ file, previewUrl, onFileSelected }: ImageUploade
         )}
       </div>
 
-      {file ? (
+      {file && !previewUrl ? (
         <div className="mt-4 rounded-2xl bg-[#eaf2d7] px-4 py-3 text-sm text-[#5f6b4a]">
           Selected: <span className="font-medium">{file.name}</span>
         </div>
