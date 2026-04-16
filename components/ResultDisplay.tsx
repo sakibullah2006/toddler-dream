@@ -10,15 +10,23 @@ type ResultDisplayProps = {
 export function ResultDisplay({ imageUrl, onReset }: ResultDisplayProps) {
   return (
     <div className="w-full space-y-4">
-      <div className="overflow-hidden rounded-3xl border border-[#ea9ab2] bg-white p-2 shadow-[0_16px_42px_rgba(226,115,150,0.25)]">
-        <Image
-          src={imageUrl}
-          alt="Generated baby portrait"
-          width={1024}
-          height={1024}
-          unoptimized
-          className="h-auto w-full rounded-2xl"
-        />
+      <div className="flex items-center justify-center overflow-hidden rounded-3xl border border-[#ea9ab2] bg-white p-2 shadow-[0_16px_42px_rgba(226,115,150,0.25)]">
+        <div
+          className="relative overflow-hidden rounded-2xl"
+          style={{
+            height: "calc(100vh - 280px)",
+            width: "min(100%, calc((100vh - 280px) * 0.75))",
+          }}
+        >
+          <Image
+            src={imageUrl}
+            alt="Generated baby portrait"
+            fill
+            sizes="(max-width: 768px) 92vw, calc((100vh - 280px) * 0.75)"
+            unoptimized
+            className="object-contain"
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
