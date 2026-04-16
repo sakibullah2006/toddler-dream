@@ -19,9 +19,14 @@
 
 body {
   background:
+    radial-gradient(circle at 24px 24px, color-mix(in srgb, var(--brand-2) 18%, transparent) 2px, transparent 2.5px),
+    radial-gradient(circle at 0 0, color-mix(in srgb, var(--brand-5) 18%, transparent) 1.8px, transparent 2.3px),
+    repeating-linear-gradient(0deg, transparent 0, transparent 26px, color-mix(in srgb, var(--brand-3) 16%, transparent) 27px),
+    repeating-linear-gradient(90deg, transparent 0, transparent 26px, color-mix(in srgb, var(--brand-3) 16%, transparent) 27px),
     radial-gradient(circle at 5% 10%, color-mix(in srgb, var(--brand-3) 70%, white) 0%, transparent 35%),
     radial-gradient(circle at 95% 15%, color-mix(in srgb, var(--brand-5) 70%, white) 0%, transparent 33%),
     var(--background);
+  background-size: 48px 48px, 48px 48px, 27px 27px, 27px 27px, auto, auto, auto;
   color: var(--foreground);
   font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
 }

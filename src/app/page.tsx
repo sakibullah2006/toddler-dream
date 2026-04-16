@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { GeneratingLoader } from "../../components/GeneratingLoader";
 import { ImageUploader } from "../../components/ImageUploader";
 import { ResultDisplay } from "../../components/ResultDisplay";
@@ -12,18 +11,9 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [theme, setTheme] = useState<PortraitTheme | null>(null);
   const [resultUrl, setResultUrl] = useState<string>("");
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
-
-  const currentStep = useMemo(() => {
-    if (resultUrl) {
-      return 3;
-    }
-    if (theme) {
-      return 2;
-    }
-    return 1;
-  }, [resultUrl, theme]);
 
   const previewUrl = useMemo(() => {
     if (!file) {
@@ -66,6 +56,7 @@ export default function Home() {
       }
 
       setResultUrl(data.imageUrl);
+      setActiveStep(3);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Generation failed.";
       setError(message);
@@ -79,97 +70,146 @@ export default function Home() {
     setTheme(null);
     setResultUrl("");
     setError("");
+    setActiveStep(1);
   }
 
   return (
-    <div className="flex min-h-screen flex-col px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <main className="mx-auto w-full max-w-6xl rounded-[2rem] border border-[#ea9ab2] bg-white/85 p-4 shadow-[0_24px_80px_rgba(151,121,138,0.26)] backdrop-blur sm:p-7 lg:p-8">
-        <header className="mb-7 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#e27396] sm:text-sm">Toddler Dream</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#4b2d3a] sm:text-4xl">
-            Baby Portrait Generator
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-[#6e4e5c] sm:text-base">
-            Upload your baby photo, pick a dreamy style, and generate a realistic portrait with your chosen aesthetic.
-          </p>
-        </header>
-
-        <div className="mb-7 grid grid-cols-3 gap-2 rounded-2xl bg-[#efcfe3]/55 p-2 text-xs font-semibold sm:text-sm">
-          {["Upload", "Theme", "Result"].map((label, index) => {
-            const step = index + 1;
-            const active = currentStep >= step;
-            return (
-              <div
-                key={label}
-                className={`rounded-xl px-3 py-2 text-center transition ${
-                  active ? "bg-white text-[#6e4e5c] shadow-sm" : "text-[#9b7a89]"
-                }`}
-              >
-                {step}. {label}
-              </div>
-            );
-          })}
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 border-b border-[#ea9ab2]/40 bg-white/80 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#e27396]">Toddler Dream</p>
+            <p className="text-sm font-semibold text-[#4b2d3a]">Baby Portrait Studio</p>
+          </div>
+          <nav className="flex items-center gap-2 text-sm font-medium">
+            <a href="#generator" className="rounded-full px-4 py-2 text-[#6e4e5c] transition hover:bg-[#efcfe3]/55">
+              Generator
+            </a>
+            <a href="#themes" className="rounded-full px-4 py-2 text-[#5b6770] transition hover:bg-[#b3dee2]/35">
+              Themes
+            </a>
+          </nav>
         </div>
+      </header>
 
-        {!resultUrl ? (
-          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-            <section className="space-y-4 rounded-[1.6rem] border border-[#efcfe3] bg-white/95 p-4 sm:p-5">
-              <h2 className="text-lg font-semibold text-[#5f3a4c]">1. Upload Photo</h2>
+      <main className="mx-auto flex w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8">
+        <section className="pb-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#e27396]">Realistic AI generation</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#4b2d3a] sm:text-5xl">
+            Step-by-step baby portrait generation
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm text-[#6e4e5c] sm:text-base">
+            Upload one image, pick a theme, and generate a photoreal portrait while preserving face, posture, and natural details.
+          </p>
+        </section>
+
+        <section id="generator" className="border-t border-[#ea9ab2]/45 pt-8">
+          <div className="mb-6 grid grid-cols-3 gap-2 rounded-xl bg-[#efcfe3]/45 p-2 text-xs font-semibold sm:max-w-md sm:text-sm">
+            {["Upload", "Theme", "Result"].map((label, index) => {
+              const step = (index + 1) as 1 | 2 | 3;
+              const active = activeStep >= step;
+              return (
+                <div
+                  key={label}
+                  className={`rounded-xl px-3 py-2 text-center transition ${
+                    active ? "bg-white text-[#6e4e5c] shadow-sm" : "text-[#9b7a89]"
+                  }`}
+                >
+                  {step}. {label}
+                </div>
+              );
+            })}
+          </div>
+
+          {activeStep === 1 ? (
+            <section className="space-y-4">
+              <h2 className="text-lg font-semibold text-[#5f3a4c]">Step 1: Upload Photo</h2>
               <ImageUploader
                 file={file}
+                previewUrl={previewUrl}
                 onFileSelected={(selectedFile) => {
                   setFile(selectedFile);
                   setResultUrl("");
                 }}
               />
-              {previewUrl ? (
-                <div className="overflow-hidden rounded-2xl border border-[#ea9ab2] bg-white p-2">
-                  <Image
-                    src={previewUrl}
-                    alt="Uploaded baby preview"
-                    width={1000}
-                    height={1000}
-                    unoptimized
-                    className="h-72 w-full rounded-xl object-cover"
-                  />
-                </div>
-              ) : null}
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  disabled={!file}
+                  onClick={() => {
+                    setError("");
+                    setActiveStep(2);
+                  }}
+                  className="inline-flex items-center justify-center rounded-full bg-[#e27396] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#cf5f83] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Continue to Themes
+                </button>
+              </div>
             </section>
+          ) : null}
 
-            <section className="space-y-4 rounded-[1.6rem] border border-[#b3dee2] bg-[#f7fcfd] p-4 sm:p-5">
-              <h2 className="text-lg font-semibold text-[#36555f]">2. Pick A Theme</h2>
-              <ThemePicker selectedTheme={theme} onSelectTheme={setTheme} />
-
-              <div className="rounded-2xl border border-[#eaf2d7] bg-[#eaf2d7]/45 p-4">
-                <p className="text-sm font-semibold text-[#5c6a45]">Style Direction</p>
-                <p className="mt-1 text-sm text-[#697658]">
-                  Expect natural skin texture, realistic lighting, and portrait framing inspired by premium newborn
-                  studio photography.
-                </p>
+          {activeStep === 2 ? (
+            <section className="space-y-4">
+              <h2 className="text-lg font-semibold text-[#36555f]">Step 2: Pick A Theme</h2>
+              <div id="themes">
+                <ThemePicker selectedTheme={theme} onSelectTheme={setTheme} />
               </div>
 
-              <button
-                type="button"
-                onClick={handleGenerate}
-                disabled={!file || !theme || loading}
-                className="mt-2 inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-[#e27396] to-[#ea9ab2] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#e27396]/35 transition hover:from-[#d56086] hover:to-[#d986a3] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {loading ? "Generating portrait..." : "Generate"}
-              </button>
+              <div className="rounded-2xl border border-[#eaf2d7] bg-[#eaf2d7]/45 p-4">
+                <p className="text-sm font-semibold text-[#5c6a45]">Generation Goal</p>
+                <p className="mt-1 text-sm text-[#697658]">
+                  Keep face, hair, posture, and body proportions from the original image while applying the selected
+                  outfit, background, and mood.
+                </p>
+              </div>
 
               {error ? (
                 <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
               ) : null}
 
               {loading ? <GeneratingLoader /> : null}
+
+              <div className="flex flex-wrap justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(1)}
+                  className="inline-flex items-center justify-center rounded-full border border-[#ea9ab2] bg-white px-5 py-2.5 text-sm font-semibold text-[#7d4c61] transition hover:bg-[#efcfe3]/30"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={!file || !theme || loading}
+                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#e27396] to-[#ea9ab2] px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#e27396]/35 transition hover:from-[#d56086] hover:to-[#d986a3] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {loading ? "Generating portrait..." : "Generate"}
+                </button>
+              </div>
             </section>
-          </div>
-        ) : (
-          <section className="mx-auto max-w-3xl space-y-4">
-            <h2 className="text-center text-lg font-semibold text-[#5f3a4c]">3. Your Portrait Is Ready</h2>
-            <ResultDisplay imageUrl={resultUrl} onReset={resetFlow} />
-          </section>
-        )}
+          ) : null}
+
+          {activeStep === 3 && resultUrl ? (
+            <section className="space-y-4">
+              <h2 className="text-lg font-semibold text-[#5f3a4c]">Step 3: Your Portrait Is Ready</h2>
+              <ResultDisplay imageUrl={resultUrl} onReset={resetFlow} />
+              <div className="flex">
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(2)}
+                  className="inline-flex items-center justify-center rounded-full border border-[#ea9ab2] bg-white px-5 py-2.5 text-sm font-semibold text-[#7d4c61] transition hover:bg-[#efcfe3]/30"
+                >
+                  Try Another Theme With Same Photo
+                </button>
+              </div>
+            </section>
+          ) : null}
+        </section>
+
+        <footer className="mt-12 border-t border-[#ea9ab2]/35 pt-5 text-xs text-[#7c6270]">
+          <p>Toddler Dream • Designed for realistic themed newborn portraits.</p>
+        </footer>
       </main>
     </div>
   );

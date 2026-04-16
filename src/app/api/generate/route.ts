@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "Image must be 4MB or smaller." }, { status: 400 });
     }
 
-    const prompt = `${promptValue.trim()} Keep the baby identity exactly consistent with the source image: same face shape, eye shape, nose, lips, expression, and skin tone. Produce a realistic professional newborn photo look with natural skin texture, subtle fine detail, lifelike lighting, and authentic camera depth of field. Avoid illustration, painting, CGI, cartoon styling, plastic skin, extra limbs, distorted anatomy, or altered age.`;
+    const prompt = `${promptValue.trim()} Preserve identity lock: keep exactly the same face, hairstyle/hairline, expression, skin tone, body posture, camera angle, and framing as the source image. Keep newborn anatomy and proportions unchanged. Apply only theme-specific clothing, props, background, and lighting. Output must be photorealistic, like a real professional camera photo, with natural skin texture and subtle fine detail. Do not generate animation, cartoon, illustration, painting, CGI, 3D render look, plastic skin, face swap, age change, extra limbs, or distorted anatomy.`;
 
     let base64 = "";
 

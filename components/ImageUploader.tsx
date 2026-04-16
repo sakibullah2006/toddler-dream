@@ -1,16 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 
 type ImageUploaderProps = {
   file: File | null;
+  previewUrl?: string;
   onFileSelected: (file: File) => void;
 };
 
 const MAX_SIZE = 4 * 1024 * 1024;
 
-export function ImageUploader({ file, onFileSelected }: ImageUploaderProps) {
+export function ImageUploader({ file, previewUrl, onFileSelected }: ImageUploaderProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const selected = acceptedFiles[0];
@@ -65,9 +67,28 @@ export function ImageUploader({ file, onFileSelected }: ImageUploaderProps) {
         }`}
       >
         <input {...getInputProps()} />
-        <p className="text-lg font-semibold text-[#82384f]">Drop baby photo here</p>
-        <p className="mt-2 text-sm text-[#9f5d78]">or click to browse</p>
-        <p className="mt-4 text-xs text-[#b06f87]">JPEG, PNG, WebP · max 4MB</p>
+        {previewUrl ? (
+          <div className="space-y-4">
+            <div className="overflow-hidden rounded-xl border border-[#ea9ab2] bg-white p-1">
+              <Image
+                src={previewUrl}
+                alt="Uploaded baby preview"
+                width={1200}
+                height={900}
+                unoptimized
+                className="h-64 w-full rounded-lg object-cover sm:h-72"
+              />
+            </div>
+            <p className="text-sm font-medium text-[#7f4b60]">Tap to replace this image</p>
+            <p className="text-xs text-[#9f5d78]">JPEG, PNG, WebP · max 4MB</p>
+          </div>
+        ) : (
+          <>
+            <p className="text-lg font-semibold text-[#82384f]">Drop baby photo here</p>
+            <p className="mt-2 text-sm text-[#9f5d78]">or click to browse</p>
+            <p className="mt-4 text-xs text-[#b06f87]">JPEG, PNG, WebP · max 4MB</p>
+          </>
+        )}
       </div>
 
       {file ? (
