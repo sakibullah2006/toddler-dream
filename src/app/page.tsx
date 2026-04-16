@@ -42,7 +42,7 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append("image", file);
-      formData.append("prompt", theme.prompt);
+      formData.append("themeId", theme.id);
 
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -93,17 +93,7 @@ export default function Home() {
       </header>
 
       <main className="mx-auto flex w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8">
-        <section className="pb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#e27396]">Realistic AI generation</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#4b2d3a] sm:text-5xl">
-            Step-by-step baby portrait generation
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm text-[#6e4e5c] sm:text-base">
-            Upload one image, pick a theme, and generate a photoreal portrait while preserving face, posture, and natural details.
-          </p>
-        </section>
-
-        <section id="generator" className="border-t border-[#ea9ab2]/45 pt-8">
+        <section id="generator" className=" pt-8">
           <div className="mb-6 grid grid-cols-3 gap-2 rounded-xl bg-[#efcfe3]/45 p-2 text-xs font-semibold sm:max-w-md sm:text-sm">
             {["Upload", "Theme", "Result"].map((label, index) => {
               const step = (index + 1) as 1 | 2 | 3;

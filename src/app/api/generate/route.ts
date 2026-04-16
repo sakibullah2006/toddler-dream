@@ -1,4 +1,7 @@
 import OpenAI from "openai";
+import fs from "fs/promises";
+import path from "path";
+import { THEMES } from "../../../../lib/themes";
 
 const MAX_SIZE = 4 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -19,14 +22,19 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const image = formData.get("image");
-    const promptValue = formData.get("prompt");
+    const themeId = formData.get("themeId");
 
     if (!(image instanceof File)) {
       return Response.json({ error: "Image file is required." }, { status: 400 });
     }
 
-    if (typeof promptValue !== "string" || !promptValue.trim()) {
-      return Response.json({ error: "Prompt is required." }, { status: 400 });
+    if (typeof themeId !== "string" || !themeId.trim()) {
+      return Response.json({ error: "Theme ID is required." }, { status: 400 });
+    }
+
+    const theme = THEMES.find((t) => t.id === themeId);
+    if (!theme) {
+      return Response.json({ error: "Invalid theme ID." }, { status: 400 });
     }
 
     if (!ALLOWED_TYPES.has(image.type)) {
@@ -37,7 +45,32 @@ export async function POST(request: Request) {
       return Response.json({ error: "Image must be 4MB or smaller." }, { status: 400 });
     }
 
-    const prompt = `${promptValue.trim()} Preserve identity lock: keep exactly the same face, hairstyle/hairline, expression, skin tone, body posture, camera angle, and framing as the source image. Keep newborn anatomy and proportions unchanged. Apply only theme-specific clothing, props, background, and lighting. Output must be photorealistic, like a real professional camera photo, with natural skin texture and subtle fine detail. Do not generate animation, cartoon, illustration, painting, CGI, 3D render look, plastic skin, face swap, age change, extra limbs, or distorted anatomy.`;
+    let backgroundFile: File | null = null;
+    let clothingFile: File | null = null;
+
+    try {
+      const themeDir = path.join(process.cwd(), "public", "themes", themeId);
+      const bgPath = path.join(themeDir, "background.png");
+      const clothingPath = path.join(themeDir, "clothing.png");
+
+      try {
+        const bgBuffer = await fs.readFile(bgPath);
+        backgroundFile = new File([bgBuffer], "background.png", { type: "image/png" });
+      } catch {
+        // Background image optional; model can generate from prompt
+      }
+
+      try {
+        const clothingBuffer = await fs.readFile(clothingPath);
+        clothingFile = new File([clothingBuffer], "clothing.png", { type: "image/png" });
+      } catch {
+        // Clothing image optional; model can generate from prompt
+      }
+    } catch {
+      // If theme assets cannot be loaded, proceed with text-only prompt
+    }
+
+    const prompt = `${theme.compositePrompt} Preserve identity lock: keep exactly the same face, hairstyle/hairline, expression, skin tone, body posture, camera angle, and framing as the source image. Keep newborn anatomy and proportions unchanged. Output must be photorealistic, like a real professional camera photo, with natural skin texture and subtle fine detail. Do not generate animation, cartoon, illustration, painting, CGI, 3D render look, plastic skin, face swap, age change, extra limbs, or distorted anatomy.`;
 
     let base64 = "";
 
